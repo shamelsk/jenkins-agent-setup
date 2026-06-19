@@ -213,6 +213,57 @@ Never commit:
 
 Only the public key (`id_ed25519.pub`) should be included in the repository.
 
+## Architecture
+
+```text
+Jenkins Controller
+        │
+        ├── SSH → agent1 (Port 2201)
+        ├── SSH → agent2 (Port 2202)
+        └── SSH → agent3 (Port 2203)
+
+Agents
+    │
+    └── Docker Socket
+            │
+            ▼
+      Host Docker Engine
+```
+
+The Jenkins controller connects to each agent over SSH. Docker commands executed inside the agents are forwarded to the host Docker Engine through the mounted Docker socket.
+
+---
+
+## Using Agent Labels
+
+Agents can be targeted individually using Jenkins labels.
+
+Example:
+
+```groovy
+pipeline {
+    agent { label 'agent2' }
+
+    stages {
+        stage('Build') {
+            steps {
+                sh 'hostname'
+            }
+        }
+    }
+}
+```
+
+Available labels:
+
+* `agent1`
+* `agent2`
+* `agent3`
+
+This allows workloads to be distributed across multiple Jenkins agents.
+
+---
+
 ---
 
 ## Author
