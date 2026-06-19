@@ -1,6 +1,6 @@
 # Jenkins SSH Agent Setup
 
-A reusable Docker-based Jenkins SSH Agent setup for CI/CD pipelines with support for Git, Java, Maven, Docker, and Python.
+A reusable Docker-based Jenkins SSH Agent setup for running CI/CD pipelines with support for Git, Java, Maven, Docker, and Python.
 
 ## Features
 
@@ -9,9 +9,9 @@ A reusable Docker-based Jenkins SSH Agent setup for CI/CD pipelines with support
 * Git and Maven pre-installed
 * Docker support via mounted Docker socket
 * Python 3 and pip
-* Portable across different machines
 * Multi-agent setup support
-* Automatic restart using Docker restart policies
+* Portable across different machines
+* Persistent agents using Docker restart policies
 
 ## Project Structure
 
@@ -32,21 +32,15 @@ A reusable Docker-based Jenkins SSH Agent setup for CI/CD pipelines with support
 * SSH key pair generated
 * Docker network for Jenkins agents
 
-## Build Image
+## Quick Start
 
-```bash
-docker build -t shamel1012/jenkins-agent:latest .
-```
-
-## Create Docker Network
+### Create Docker Network
 
 ```bash
 docker network create jenkins-agents
 ```
 
-## Start Agents
-
-A helper script is included to start all Jenkins agents automatically.
+### Start All Agents
 
 Make the script executable:
 
@@ -60,15 +54,17 @@ Run:
 ./start-agents.sh
 ```
 
-This will start:
+This will automatically start:
 
-* agent1 (Port 2201)
-* agent2 (Port 2202)
-* agent3 (Port 2203)
+| Agent  | Port |
+| ------ | ---- |
+| agent1 | 2201 |
+| agent2 | 2202 |
+| agent3 | 2203 |
 
-## Manual Agent Creation
+### Manual Agent Creation (Optional)
 
-If you prefer to create agents manually:
+If you prefer creating agents manually:
 
 ```bash
 docker run -d \
@@ -81,30 +77,86 @@ docker run -d \
   shamel1012/jenkins-agent:latest
 ```
 
-Repeat for additional agents by changing the container name and SSH port.
+For additional agents, change the container name and SSH port.
 
-## Jenkins Node Configuration
+---
 
-Configure each node in Jenkins:
+## Jenkins Configuration
 
-| Setting               | Value                   |
-| --------------------- | ----------------------- |
-| Launch Method         | Launch agents via SSH   |
-| Remote Root Directory | `/home/jenkins`         |
-| Host                  | Docker host IP          |
-| Credentials           | Jenkins SSH Credentials |
+> Starting the containers alone is not enough. Each container must be registered as a Jenkins node before it can execute pipelines.
 
-Example:
+### Step 1: Create SSH Credentials
 
-| Agent  | Port | Label  |
-| ------ | ---- | ------ |
-| agent1 | 2201 | agent1 |
-| agent2 | 2202 | agent2 |
-| agent3 | 2203 | agent3 |
+1. Navigate to **Manage Jenkins → Credentials**
+2. Select **Global credentials (unrestricted)**
+3. Click **Add Credentials**
+4. Configure:
+
+   * Kind: **SSH Username with private key**
+   * Username: `jenkins`
+   * Private Key: Enter your private SSH key
+   * ID: `jenkins-agent-ssh`
+5. Save
+
+### Step 2: Create a New Node
+
+1. Navigate to **Manage Jenkins → Nodes**
+2. Click **New Node**
+3. Enter:
+
+   * Node Name: `agent1`
+   * Type: **Permanent Agent**
+4. Click **Create**
+
+### Step 3: Configure the Node
+
+Use the following settings:
+
+| Setting                        | Value                               |
+| ------------------------------ | ----------------------------------- |
+| Number of Executors            | 2                                   |
+| Remote Root Directory          | `/home/jenkins`                     |
+| Labels                         | `agent1`                            |
+| Usage                          | Use this node as much as possible   |
+| Launch Method                  | Launch agents via SSH               |
+| Host                           | `<Docker Host IP>`                  |
+| Port                           | `2201`                              |
+| Credentials                    | `jenkins-agent-ssh`                 |
+| Host Key Verification Strategy | Non verifying Verification Strategy |
+
+Save the configuration.
+
+### Step 4: Configure Additional Nodes
+
+Repeat the same process for the remaining agents:
+
+| Node Name | Label  | Port |
+| --------- | ------ | ---- |
+| agent1    | agent1 | 2201 |
+| agent2    | agent2 | 2202 |
+| agent3    | agent3 | 2203 |
+
+### Step 5: Verify Agent Status
+
+Navigate to:
+
+```text
+Manage Jenkins → Nodes
+```
+
+Expected:
+
+```text
+agent1  Online
+agent2  Online
+agent3  Online
+```
+
+---
 
 ## Verify Agent
 
-Example Jenkins Pipeline:
+Create a Pipeline Job and run:
 
 ```groovy
 pipeline {
@@ -124,6 +176,16 @@ pipeline {
 }
 ```
 
+Expected output:
+
+* User: `jenkins`
+* Git version
+* Java version
+* Docker version
+* Running containers
+
+---
+
 ## Installed Tools
 
 * OpenJDK 21
@@ -135,6 +197,9 @@ pipeline {
 * curl
 * wget
 * unzip
+* zip
+
+---
 
 ## Security Notes
 
@@ -147,6 +212,8 @@ Never commit:
 * `.env` files containing secrets
 
 Only the public key (`id_ed25519.pub`) should be included in the repository.
+
+---
 
 ## Author
 
