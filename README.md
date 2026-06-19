@@ -38,13 +38,6 @@ A reusable Docker-based Jenkins SSH Agent setup for CI/CD pipelines with support
 docker build -t shamel1012/jenkins-agent:latest .
 ```
 
-## Push Image to Docker Hub
-
-```bash
-docker login
-docker push shamel1012/jenkins-agent:latest
-```
-
 ## Create Docker Network
 
 ```bash
