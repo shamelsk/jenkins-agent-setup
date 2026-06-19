@@ -264,8 +264,6 @@ This allows workloads to be distributed across multiple Jenkins agents.
 
 ---
 
----
-
 ## Author
 
 **Shamel Khan**
