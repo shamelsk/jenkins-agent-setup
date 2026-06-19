@@ -1,13 +1,16 @@
 # Jenkins SSH Agent Setup
 
-A reusable Docker-based Jenkins SSH Agent setup for running CI/CD pipelines with support for Git, Java, Maven, Docker, and Python.
+A reusable Docker-based Jenkins SSH Agent setup for running CI/CD pipelines with support for Docker, Docker Compose, Kubernetes, Terraform, Ansible, Java, and Python workloads.
 
 ## Features
 
 * SSH-based Jenkins agents
 * OpenJDK 21
 * Git and Maven pre-installed
-* Docker support via mounted Docker socket
+* Docker and Docker Compose support
+* Kubernetes deployments with kubectl
+* Terraform Infrastructure as Code support
+* Ansible automation support
 * Python 3 and pip
 * Multi-agent setup support
 * Portable across different machines
@@ -163,13 +166,18 @@ pipeline {
     agent { label 'agent1' }
 
     stages {
-        stage('Verify Agent') {
+        stage('Verify DevOps Agent') {
             steps {
                 sh 'whoami'
                 sh 'git --version'
                 sh 'java -version'
+                sh 'mvn -version'
                 sh 'docker --version'
-                sh 'docker ps'
+                sh 'docker compose version'
+                sh 'python3 --version'
+                sh 'terraform version'
+                sh 'kubectl version --client'
+                sh 'ansible --version'
             }
         }
     }
@@ -192,13 +200,28 @@ Expected output:
 * Git
 * Maven
 * Docker
+* Docker Compose V2
 * Python 3
 * pip
+* Terraform
+* kubectl
+* Ansible
 * curl
 * wget
 * unzip
-* zip
+---
 
+## Supported Use Cases
+
+* Java application build and deployment
+* Python application build and deployment
+* Docker image build and push
+* Docker Compose deployments
+* Kubernetes deployments
+* Terraform infrastructure provisioning
+* Ansible configuration management
+* AWS infrastructure automation
+* Multi-agent Jenkins pipelines
 ---
 
 ## Security Notes
